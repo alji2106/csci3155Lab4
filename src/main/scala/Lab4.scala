@@ -4,10 +4,10 @@ object Lab4 extends jsy.util.JsyApplication {
   
   /*
    * CSCI 3155: Lab 4
-   * <Your Name>
+   * Alixandria Jimenez
    * 
-   * Partner: <Your Partner's Name>
-   * Collaborators: <Any Collaborators>
+   * Partner: Matt Cirbo
+   * Collaborators: Darya (former student)
    */
 
   /*
@@ -51,23 +51,13 @@ object Lab4 extends jsy.util.JsyApplication {
     	case _ => h::acc
     }
   }
-
-  def reverse[T](l: List[T]): List[T] = 
-    l.foldLeft(Nil: List[T]){(acc, x) => x :: acc}
   
-  def mapFirst[A](f: A => Option[A])(l: List[A]): List[A] = {//l match {
-    	  val (revlist, _) =
-	    l.foldLeft(Nil: List[A], false){(acc, a) =>
-	      val(acclist, accflag) = acc
-	      if (accflag)(a :: acclist, accflag)
-	      else
-	      f(a) match {
-	        case Some(ap) => (ap :: acclist, true)
-	        case None => (a::acclist, accflag)
-	      }
-	  	
-	  	}
-	  reverse(revlist);
+  def mapFirst[A](f: A => Option[A])(l: List[A]): List[A] = l match {
+      case Nil => l
+      case h :: t => f(h) match {
+      	case Some(x) => x :: t
+      	case None => h :: mapFirst(f)(t)
+      }
   }
   
   /* Search Trees */
@@ -162,9 +152,8 @@ object Lab4 extends jsy.util.JsyApplication {
       	case (e1got, e2got) => if (e1got == e2got) TBool else err(e1got, e1)
       }
       case Binary(Lt|Le|Gt|Ge, e1, e2) => (typ(e1), typ(e2)) match {
-      	case (TString, TString) => TString
-      	//case (TNumber, TNumber) => TNumber
-      	case (TBool, TBool) => TBool
+      	case (TString, TString) => TBool
+      	case (TNumber, TNumber) => TBool
       	case _ => err(typ(e1), e1)
       }
       case Binary(And|Or, e1, e2) => (typ(e1), typ(e2)) match {
@@ -173,8 +162,8 @@ object Lab4 extends jsy.util.JsyApplication {
       }
       case Binary(Seq, e1, e2) => typ(e1)
       case If(e1, e2, e3) => {
-      	if(typ(e1) != TBool) return err(typ(e1), e1)
-      	if(typ(e1) ==typ(e2)) return typ(e2) else return err(typ(e2), e2)
+      	if(typ(e1) != TBool) err(typ(e1), e1)
+      	if(typ(e1) ==typ(e2)) typ(e2) else err(typ(e2), e2)
       }
       case Function(p, params, tann, e1) => {
         // Bind to env1 an environment that extends env with an appropriate binding if
@@ -208,10 +197,10 @@ object Lab4 extends jsy.util.JsyApplication {
       }
       case GetField(e1, f) => typ(e1) match {
         case TObj(rf) => rf.get(f)match {
-        	case Some(x) => return x
-        	case None => return err(typ(e1), e1)
+        	case Some(x) => x
+        	case None => err(typ(e1), e1)
         }
-        case _ => return err(typ(e1), e1)
+        case _ => err(typ(e1), e1)
       }
     }
   }
